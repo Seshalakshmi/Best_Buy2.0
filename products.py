@@ -17,20 +17,25 @@ class Product:
         if not name:
             raise ValueError("Name is required")
 
-        if not price or price < 0:
+        if price is None or price < 0:
             raise ValueError("Price is required")
 
-        if not quantity or quantity < 0:
+        if quantity is None or quantity < 0:
             raise ValueError("Quantity is required")
 
         try:
             self._name = name
             self._price = price
             self._quantity = quantity
+
+            if self._quantity == 0:
+                self.deactivate()
+            else:
+                self.activate()
+
         except ValueError as e:
             print(e)
 
-        self._active = True
 
 
     def get_quantity(self) -> int:
@@ -122,4 +127,4 @@ class Product:
                 self.deactivate()
             return float(self._price * quantity)
         else:
-            return f"This product is inactive"
+            raise ValueError("This product is inactive")
