@@ -1,4 +1,4 @@
-from products import Product
+from products import Product, NonStockedProduct, LimitedProduct
 import store
 
 
@@ -13,7 +13,8 @@ def list_of_products_in_store(store_items):
     """
     all_products = store_items.get_all_products()
     for nos, item in enumerate(all_products, 1):
-        print(f"{nos}: {Product.show(item)}")
+        print(f"{nos}: {item.show()}")
+
     print("________")
 
 
@@ -59,29 +60,47 @@ def make_order(store_items):
             continue
 
         try:
-            shopping = int(shopping)
+            shopping = int(shopping) - 1
             purchase_quantity = int(purchase_quantity)
 
         except ValueError:
             print("Error adding product!")
             continue
 
-        for nos, item in enumerate(all_products, 1):
-            if shopping == nos:
-                if purchase_quantity <= Product.get_quantity(item):
-                    purchased.append((item, int(purchase_quantity)))
-                elif purchase_quantity > Product.get_quantity(item):
-                    print(
-                        "Error while making order! Quantity larger than what "
-                        "exists")
-        if purchased:
-            total_amount += store_items.order(purchased)
-            print("Product added to list!")
+        if shopping < 0 or shopping >= len(all_products):
+            print("Error: Invalid product number!")
+            continue
 
-    if total_amount > 0:
-        print("*********")
-        print(f"Order made! Total payment: ${total_amount}")
+        item = all_products[shopping]
 
+        current_stock = item.get_quantity()
+
+        if isinstance(item, LimitedProduct) and purchase_quantity > item.maximum:
+            print(
+                f"Error while making order! Quantity larger than maximum allowed per order ({item.maximum})")
+            continue
+
+            # Check stock limits (ignore check for NonStockedProduct since it has unlimited stock)
+        if not isinstance(item, NonStockedProduct) and purchase_quantity > current_stock:
+            print("Error while making order! Quantity larger than what exists")
+            continue
+
+        if purchase_quantity <= 0:
+            print("Error: Quantity must be greater than zero.")
+            continue
+
+        purchased.append((item, purchase_quantity))
+        print("Product added to list!")
+
+    if purchased:
+        try:
+            total_payment = store_items.order(purchased)
+            print("*********")
+            print(f"Order made! Total payment: ${total_payment:.2f}")
+        except Exception as e:
+            print(f"Order execution failed: {e}")
+    else:
+        print("No items ordered.")
 
 def exit_program():
     """Exit the store application."""
@@ -137,11 +156,14 @@ def main():
         Creates sample products, initializes the store,
         and starts the CLI.
     """
+    # setup initial stock of inventory
     product_list = [
         Product("MacBook Air M2", price=1450, quantity=100),
         Product("Bose QuietComfort Earbuds", price=250, quantity=500),
-        Product("Google Pixel 7", price=500, quantity=250)
-    ]
+        Product("Google Pixel 7", price=500, quantity=250),
+        NonStockedProduct("Windows License", price=125),
+        LimitedProduct("Shipping", price=10, quantity=250, maximum=1)
+        ]
     best_buy = store.Store(product_list)
     start(best_buy)
 
