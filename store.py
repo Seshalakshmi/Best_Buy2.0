@@ -1,3 +1,5 @@
+from products import Product
+
 class Store:
     """
     Represents a store that manages a collection of Product objects.
@@ -6,22 +8,34 @@ class Store:
     retrieve active products, and process customer orders.
     """
 
-    def __init__(self, list_of_products):
+    def __init__(self, list_of_products:list[Product]):
         """
-        Initialize the store with a list of products.
+        Initialize a Store instance.
 
         Args:
-            list_of_products (list): List of Product instances.
+            list_of_products: Initial collection of products.
+
+        Raises:
+            TypeError: If `list_of_products` is not a list.
         """
+        if not all(isinstance(item, Product) for item in list_of_products):
+            raise TypeError("All items must be Product instances")
+
         self.list_of_products = list_of_products
 
-    def add_product(self, product):
+    def add_product(self, product: Product):
         """
         Add a product to the store inventory.
 
         Args:
-            product (Product): The product to add.
+            product: Product to add.
+
+        Raises:
+            TypeError: If `product` is not a Product instance.
         """
+        if not isinstance(product, Product):
+            raise TypeError("products must be a Product")
+
         self.list_of_products.append(product)
 
     def remove_product(self, product):
@@ -29,26 +43,41 @@ class Store:
         Remove a product from the store inventory.
 
         Args:
-            product (Product): The product to remove.
+            product: Product to remove.
 
         Raises:
-            ValueError: If the product is not in the list.
+            TypeError: If `product` is not a Product instance.
+            ValueError: If the product does not exist in the inventory.
         """
+        if not isinstance(product, Product):
+            raise TypeError("products must be a Product")
+
+        if product not in self.list_of_products:
+            raise ValueError("Product not found")
+
         self.list_of_products.remove(product)
+
 
     def get_total_quantity(self):
         """
-        Calculate the total quantity of all products in the store.
+        Calculate the total quantity of all products in inventory.
 
         Returns:
-            int: Total quantity across all products.
+            int: Total number of units available across all products.
+
+        Raises:
+            TypeError: If an inventory item is not a Product instance.
         """
         total_quantity = 0
 
         for item in self.list_of_products:
+            if not isinstance(item, Product):
+                raise TypeError("Item must be Product")
+
             total_quantity += item.get_quantity()
 
         return total_quantity
+
 
     def get_all_products(self):
         """

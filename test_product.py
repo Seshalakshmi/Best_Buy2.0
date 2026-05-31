@@ -1,7 +1,6 @@
 import pytest
 
 from products import Product, LimitedProduct
-from promotions import Promotion
 
 
 def test_creating_prod():

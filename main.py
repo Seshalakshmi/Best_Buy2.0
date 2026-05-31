@@ -48,7 +48,6 @@ def make_order(store_items):
     list_of_products_in_store(store_items)
     print("When you want to finish order, enter empty text. ")
     purchased = []
-    total_amount = 0
     while True:
         shopping = input("Which product # do you want? ")
         if shopping == "":
@@ -83,8 +82,6 @@ def make_order(store_items):
                 f"allowed per order ({item.maximum})")
             continue
 
-            # Check stock limits (ignore check for NonStockedProduct since
-            # it has unlimited stock)
         if (not isinstance(item,
                           NonStockedProduct) and purchase_quantity >
                 current_stock):

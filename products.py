@@ -1,5 +1,5 @@
+from typing import Union
 from promotions import Promotion
-
 
 class Product:
     """
@@ -10,15 +10,28 @@ class Product:
         display product information, and process purchases.
     """
 
-    def __init__(self, name: str, price: float, quantity: int):
+    def __init__(self, name: str, price:Union[float, int], quantity: int):
         """
-                Initialize a new Product instance.
+        Initialize a Product instance.
 
-                Args:
-                    name (str): The name of the product.
-                    price (int | float): The price per unit of the product.
-                    quantity (int): The available stock quantity.
+        Args:
+            name: Product name.
+            price: Unit price of the product.
+            quantity: Initial stock quantity.
+
+        Raises:
+            TypeError: If any argument has an invalid type.
+            ValueError: If name is empty, or if price/quantity are negative.
         """
+        if not isinstance(name, str):
+            raise TypeError("Name should be string")
+
+        if not isinstance(price, (float, int)):
+            raise TypeError("Price should be a float or integer")
+
+        if not isinstance(quantity, int):
+            raise TypeError("Quantity should be an integer")
+
         if not name:
             raise ValueError("Name is required")
 
@@ -75,9 +88,17 @@ class Product:
                     ValueError: If quantity is not a positive integer.
                     TypeError: If type is invalid.
         """
-        if not isinstance(new_quantity, int) and new_quantity < 0:
-            raise ValueError("Quantity should be a integer")
-        self.quantity = new_quantity
+        if not isinstance(new_quantity, int) and new_quantity > 0:
+            raise TypeError("Quantity is Invalid")
+
+        if new_quantity > self.quantity:
+            raise ValueError("Quantity is out of stock")
+
+        if new_quantity < 0:
+            raise ValueError("Please type a positive number")
+
+        self.quantity -= new_quantity
+
         if self.quantity == 0:
             self.deactivate()
         else:
@@ -136,20 +157,14 @@ class Product:
         """
         if not self.active:
             raise ValueError("This product is inactive")
-        if quantity > self.quantity:
-            raise ValueError("Quantity is out of stock")
-        if quantity <= 0:
-            raise ValueError("Purchase Quantity must be positive")
 
         if self.promotion:
             total_price = self.promotion.apply_promotion(self.price, quantity)
         else:
             total_price = self.price * quantity
 
-        self.quantity -= quantity
+        self.set_quantity(quantity)
 
-        if self.quantity == 0:
-            self.deactivate()
         return float(total_price)
 
 
@@ -224,7 +239,9 @@ class LimitedProduct(Product):
         """
         if maximum <= 0:
             raise ValueError("Maximum limit must be greater than 0")
+
         self.maximum = maximum
+
 
     def show(self) -> str:
         """
@@ -255,4 +272,5 @@ class LimitedProduct(Product):
         if quantity > self.maximum:
             raise ValueError(
                 f"Cannot purchase more than {self.maximum} items at once")
+
         return quantity * self.promotion
